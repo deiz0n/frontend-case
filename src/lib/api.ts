@@ -30,5 +30,5 @@ export const atualizarCliente = async (id: string, data: Partial<ClienteFormData
 
 export const buscarAtivosFinanceiros = async (): Promise<AtivoFinanceiro[]> => {
     const response = await apiClient.get('/ativos-financeiros');
-    return response.data;
+    return response.data.dados;
 };
