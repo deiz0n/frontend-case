@@ -1,15 +1,16 @@
-"use client";
-
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ClienteFormData } from '@/lib/types';
-import { clienteFormSchema } from '@/lib/schemas'
+import { clienteFormSchema } from '@/lib/schemas';
+import { useEffect, useState } from 'react';
+import { buscarAtivosFinanceiros } from '@/lib/api';
+import { AtivoFinanceiro } from '@/lib/types';
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 interface ClientFormProps {
     onSubmit: (data: ClienteFormData) => void;
@@ -19,23 +20,31 @@ interface ClientFormProps {
 }
 
 export const ClienteForm: React.FC<ClientFormProps> = ({ onSubmit, onCancel, defaultValues, isSubmitting }) => {
+    const [ativos, setAtivos] = useState<AtivoFinanceiro[]>([]);
+
+    useEffect(() => {
+        buscarAtivosFinanceiros().then(res => setAtivos(Array.isArray(res) ? res : []));
+    }, []);
+
     const form = useForm<ClienteFormData>({
         resolver: zodResolver(clienteFormSchema),
-        defaultValues: defaultValues || {
+        defaultValues: {
             nome: '',
             email: '',
-            status: 'ativo',
+            ativosFinanceiros: [],
+            ...defaultValues,
+            status: defaultValues?.status?.toUpperCase() === 'INATIVO' ? 'INATIVO' : 'ATIVO',
         },
     });
 
-    const handleSubmit = form.handleSubmit(async (data) => {
+    const handleSubmit = form.handleSubmit((data) => {
         onSubmit(data);
     });
 
     return (
-        <Form {...form}>
+        <FormProvider {...form}>
             <form onSubmit={handleSubmit} className="space-y-6">
-                <FormField
+                <FormField<ClienteFormData>
                     control={form.control}
                     name="nome"
                     render={({ field }) => (
@@ -48,8 +57,7 @@ export const ClienteForm: React.FC<ClientFormProps> = ({ onSubmit, onCancel, def
                         </FormItem>
                     )}
                 />
-
-                <FormField
+                <FormField<ClienteFormData>
                     control={form.control}
                     name="email"
                     render={({ field }) => (
@@ -62,29 +70,55 @@ export const ClienteForm: React.FC<ClientFormProps> = ({ onSubmit, onCancel, def
                         </FormItem>
                     )}
                 />
-
-                <FormField
+                <FormField<ClienteFormData>
                     control={form.control}
                     name="status"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Status</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={typeof field.value === "string" ? field.value : field.value?.[0] ?? "ATIVO"}>
                                 <FormControl>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Selecione o status" />
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    <SelectItem value="ativo">Ativo</SelectItem>
-                                    <SelectItem value="inativo">Inativo</SelectItem>
+                                    <SelectItem value="ATIVO">Ativo</SelectItem>
+                                    <SelectItem value="INATIVO">Inativo</SelectItem>
                                 </SelectContent>
                             </Select>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
-
+                <FormField<ClienteFormData>
+                    control={form.control}
+                    name="ativosFinanceiros"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Ativos Financeiros</FormLabel>
+                            <FormControl>
+                                <select
+                                    multiple
+                                    value={field.value}
+                                    onChange={e => {
+                                        const selected = Array.from(e.target.selectedOptions, option => option.value);
+                                        field.onChange(selected);
+                                    }}
+                                    className="w-full border rounded px-2 py-1"
+                                >
+                                    {Array.isArray(ativos) && ativos.map(ativo => (
+                                        <option key={ativo.id} value={ativo.id}>
+                                            {ativo.nome} (R$ {ativo.valorAtual.toLocaleString('pt-BR', { minimumFractionDigits: 2 })})
+                                        </option>
+                                    ))}
+                                </select>
+                            </FormControl>
+                            <FormDescription>Selecione um ou mais ativos financeiros.</FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
                 <div className="flex gap-3 pt-4">
                     <Button type="submit" className="flex-1" disabled={isSubmitting}>
                         {isSubmitting ? (defaultValues?.nome ? 'Atualizando...' : 'Adicionando...') : (defaultValues?.nome ? 'Atualizar Cliente' : 'Adicionar Cliente')}
@@ -94,6 +128,6 @@ export const ClienteForm: React.FC<ClientFormProps> = ({ onSubmit, onCancel, def
                     </Button>
                 </div>
             </form>
-        </Form>
+        </FormProvider>
     );
 };
