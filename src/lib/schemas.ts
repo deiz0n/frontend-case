@@ -11,6 +11,6 @@ export const clienteFormSchema = z.object({
     ).email(
         { message: "Email inválido." }
     ),
-    status: z.enum(['ativo', 'inativo'], { message: "Status inválido." }),
+    status: z.enum(['ATIVO', 'INATIVO'], { message: "Status inválido." }),
     ativosFinanceiros: z.array(z.any())
 })
