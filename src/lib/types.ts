@@ -2,7 +2,7 @@ export interface Cliente {
     id: string;
     nome: string;
     email: string;
-    status: 'ativo' | 'inativo';
+    status: 'ATIVO' | 'INATIVO';
     ativosFinanceiros: string[]
 }
 
