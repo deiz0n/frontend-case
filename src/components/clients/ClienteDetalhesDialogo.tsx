@@ -37,7 +37,7 @@ export const ClienteDetalhesDialogo: React.FC<ClienteDetalhesDialogoProps> = ({ 
     if (!client) return null;
 
     // Filtra apenas os ativos do cliente
-    const ativosDoCliente = Array.isArray(ativos)
+    const ativosDoCliente = Array.isArray(ativos) && Array.isArray(client.ativosFinanceiros)
         ? ativos.filter(a => client.ativosFinanceiros.includes(a.id))
         : [];
 
@@ -60,12 +60,12 @@ export const ClienteDetalhesDialogo: React.FC<ClienteDetalhesDialogoProps> = ({ 
                                 <strong>Status:</strong>
                                 <span
                                     className={`ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                                        client.status === 'ativo'
+                                        client.status === 'ATIVO'
                                             ? 'bg-green-100 text-green-800'
                                             : 'bg-red-100 text-red-800'
                                     }`}
                                 >
-                                    {client.status === 'ativo' ? <Check size={12} className="mr-1" /> : <AlertCircle size={12} className="mr-1" />}
+                                    {client.status === 'ATIVO' ? <Check size={12} className="mr-1" /> : <AlertCircle size={12} className="mr-1" />}
                                     {client.status.charAt(0).toUpperCase() + client.status.slice(1)}
                                 </span>
                             </div>
