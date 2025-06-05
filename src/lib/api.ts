@@ -13,11 +13,6 @@ export const buscarClientes = async (): Promise<Cliente[]> => {
     return response.data.dados;
 };
 
-export const buscarClientePorId = async (id: string): Promise<Cliente> => {
-    const response = await apiClient.get(`/clientes/${id}`);
-    return response.data;
-};
-
 export const criarCliente = async (data: ClienteFormData): Promise<Cliente> => {
     const response = await apiClient.post('/clientes/criar', data);
     return response.data;
@@ -30,5 +25,12 @@ export const atualizarCliente = async (id: string, data: Partial<ClienteFormData
 
 export const buscarAtivosFinanceiros = async (): Promise<AtivoFinanceiro[]> => {
     const response = await apiClient.get('/ativos-financeiros');
+    return response.data.dados;
+};
+
+export const buscarAtivosFinanceirosPorCliente = async (clienteId: string): Promise<AtivoFinanceiro[]> => {
+    const response = await apiClient.get(`/ativos-financeiros/cliente`, {
+        params: { clienteId }
+    });
     return response.data.dados;
 };
