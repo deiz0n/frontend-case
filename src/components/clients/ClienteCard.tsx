@@ -3,7 +3,7 @@
 import React from 'react';
 import { Cliente } from '@/lib/types';
 import { Button } from '@/components/ui/button'; // [cite: 13, 15]
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'; // [cite: 13, 15]
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Edit, Eye, Check, AlertCircle } from 'lucide-react';
 
 interface ClienteCardProps {
@@ -45,12 +45,12 @@ export const ClienteCard: React.FC<ClienteCardProps> = ({ client, onEdit, onView
                 <div className="flex items-center gap-2">
           <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  client.status === 'ativo'
+                  client.status === 'ATIVO'
                       ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
                       : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
               }`}
           >
-            {client.status === 'ativo' ? <Check size={12} className="mr-1" /> : <AlertCircle size={12} className="mr-1" />}
+            {client.status === 'ATIVO' ? <Check size={12} className="mr-1" /> : <AlertCircle size={12} className="mr-1" />}
               {client.status.charAt(0).toUpperCase() + client.status.slice(1)}
           </span>
                 </div>
