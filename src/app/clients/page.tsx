@@ -1,5 +1,6 @@
 "use client";
 
+import {AxiosError} from "axios";
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { buscarClientes, criarCliente, atualizarCliente } from '@/lib/api';
@@ -37,24 +38,34 @@ export default function ClientsPage() {
             setIsAddModalOpen(false);
             toast.success("Cliente adicionado com sucesso.");
         },
-        onError: (err: Error) => {
-            toast.error(`Falha ao adicionar cliente: ${err.message}`);
+        onError: (err: any) => {
+            const axiosError = err as AxiosError<any>;
+            const mensagemErro = axiosError.response?.data?.mensagem ||
+                axiosError.response?.data?.detalhes ||
+                axiosError.message ||
+                "Erro desconhecido";
+
+            toast.error(`Falha ao adicionar cliente: ${mensagemErro}`);
+            console.error("Detalhes completos do erro:", axiosError.response?.data);
         },
     });
 
     const updateClientMutation = useMutation(
-        (data: { id: string; clientData: Partial<ClienteFormData> }) => atualizarCliente(data.id, data.clientData), {
-            onSuccess: () => {
-                queryClient.invalidateQueries(['clients']);
-                queryClient.invalidateQueries(['clientAllocations', selectedClient?.id]);
-                setIsEditModalOpen(false);
-                setSelectedClient(null);
-                toast.success("Cliente atualizado com sucesso.");
+        (data: { id: string; clientData: Partial<ClienteFormData> }) =>
+            atualizarCliente(data.id, data.clientData),
+        {
+            onError: (err: any) => {
+                const axiosError = err as AxiosError<any>;
+                const mensagemErro = axiosError.response?.data?.mensagem ||
+                    axiosError.response?.data?.detalhes ||
+                    axiosError.message ||
+                    "Erro desconhecido";
+
+                toast.error(`Falha ao atualizar cliente: ${mensagemErro}`);
+                console.error("Detalhes completos do erro:", axiosError.response?.data);
             },
-            onError: (err: Error) => {
-                toast.error(`Falha ao atualizar cliente: ${err.message}`);
-            },
-        });
+        }
+    );
 
     const handleAddClientSubmit = (data: ClienteFormData) => {
         createClientMutation.mutate(data);
