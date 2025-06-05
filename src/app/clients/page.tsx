@@ -3,7 +3,7 @@
 import {AxiosError} from "axios";
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { buscarClientes, criarCliente, atualizarCliente } from '@/lib/api';
+import { buscarClientes, criarCliente, atualizarCliente, buscarAtivosFinanceirosPorCliente } from '@/lib/api';
 import { Cliente, ClienteFormData } from '@/lib/types';
 import Link from 'next/link';
 
@@ -25,7 +25,7 @@ export default function ClientsPage() {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-    const [selectedClient, setSelectedClient] = useState<Cliente | null>(null);
+    const [selectedClient, setSelectedClient] = useState<(Cliente | Partial<ClienteFormData>) | null>(null);
 
     const { data: clients, isLoading, error } = useQuery<Cliente[], Error>(
         ['clients'],
@@ -72,14 +72,26 @@ export default function ClientsPage() {
     };
 
     const handleEditClientSubmit = (data: ClienteFormData) => {
-        if (selectedClient) {
+        if (selectedClient && 'id' in selectedClient) {
             updateClientMutation.mutate({ id: selectedClient.id, clientData: data });
         }
     };
 
-    const openEditModal = (client: Cliente) => {
-        setSelectedClient(client);
-        setIsEditModalOpen(true);
+    const openEditModal = async (client: Cliente) => {
+        try {
+            const ativosDoCliente = await buscarAtivosFinanceirosPorCliente(client.id);
+
+            const defaultValues = {
+                ...client,
+                ativosFinanceiros: ativosDoCliente.map(ativo => ativo.id)
+            };
+
+            setSelectedClient(defaultValues);
+            setIsEditModalOpen(true);
+        } catch (error) {
+            console.error("Erro ao buscar ativos do cliente:", error);
+            toast.error("Erro ao carregar ativos do cliente");
+        }
     };
 
     const openViewModal = (client: Cliente) => {
@@ -175,21 +187,21 @@ export default function ClientsPage() {
             <DialogHeader>
                 <DialogTitle>Editar Cliente: {selectedClient.nome}</DialogTitle>
     </DialogHeader>
-    <ClienteForm
-        onSubmit={handleEditClientSubmit}
-        onCancel={() => { setIsEditModalOpen(false); setSelectedClient(null); }}
-        defaultValues={selectedClient}
-        isSubmitting={updateClientMutation.isLoading}
-        />
-        </DialogContent>
-        </Dialog>
-    )}
+        <ClienteForm
+            onSubmit={handleEditClientSubmit}
+            onCancel={() => { setIsEditModalOpen(false); setSelectedClient(null); }}
+            defaultValues={selectedClient}
+            isSubmitting={updateClientMutation.isLoading}
+            />
+            </DialogContent>
+            </Dialog>
+        )}
 
-    <ClienteDetalhesDialogo
-        client={selectedClient}
-    isOpen={isViewModalOpen}
-    onClose={() => { setIsViewModalOpen(false); setSelectedClient(null); }}
-    />
+            <ClienteDetalhesDialogo
+                client={selectedClient && 'id' in selectedClient ? selectedClient as Cliente : null}
+                isOpen={isViewModalOpen}
+                onClose={() => { setIsViewModalOpen(false); setSelectedClient(null); }}
+            />
     </div>
 );
 }
