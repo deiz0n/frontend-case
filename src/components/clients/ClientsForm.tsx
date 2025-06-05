@@ -44,11 +44,13 @@ export const ClienteForm: React.FC<ClientFormProps> = ({ onSubmit, onCancel, def
     useEffect(() => {
         if (defaultValues && !loadingAtivos) {
             const ativosNormalizados = Array.isArray(defaultValues.ativosFinanceiros)
-                ? defaultValues.ativosFinanceiros.map((a: any) => {
-                    if (typeof a === 'string') return a;
-                    if (typeof a === 'object' && a !== null && a.id) return String(a.id);
-                    return null;
-                }).filter(Boolean)
+                ? defaultValues.ativosFinanceiros
+                    .map((a: any) => {
+                        if (typeof a === 'string') return a;
+                        if (typeof a === 'object' && a !== null && a.id) return String(a.id);
+                        return null;
+                    })
+                    .filter((id): id is string => id !== null)
                 : [];
 
             form.reset({
