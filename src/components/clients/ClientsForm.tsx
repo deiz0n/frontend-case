@@ -38,7 +38,14 @@ export const ClienteForm: React.FC<ClientFormProps> = ({ onSubmit, onCancel, def
     });
 
     const handleSubmit = form.handleSubmit((data) => {
-        onSubmit(data);
+        const dadosParaEnviar = {
+            nome: data.nome,
+            email: data.email,
+            status: data.status,
+            ativos: data.ativosFinanceiros
+        };
+
+        onSubmit(dadosParaEnviar);
     });
 
     return (
@@ -95,26 +102,50 @@ export const ClienteForm: React.FC<ClientFormProps> = ({ onSubmit, onCancel, def
                     control={form.control}
                     name="ativosFinanceiros"
                     render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="space-y-4">
                             <FormLabel>Ativos Financeiros</FormLabel>
                             <FormControl>
-                                <select
-                                    multiple
-                                    value={field.value}
-                                    onChange={e => {
-                                        const selected = Array.from(e.target.selectedOptions, option => option.value);
-                                        field.onChange(selected);
-                                    }}
-                                    className="w-full border rounded px-2 py-1"
-                                >
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                     {Array.isArray(ativos) && ativos.map(ativo => (
-                                        <option key={ativo.id} value={ativo.id}>
-                                            {ativo.nome} (R$ {ativo.valorAtual.toLocaleString('pt-BR', { minimumFractionDigits: 2 })})
-                                        </option>
+                                        <div
+                                            key={ativo.id}
+                                            className={`border rounded-md p-3 cursor-pointer hover:bg-slate-50 transition-colors ${
+                                                field.value.includes(ativo.id) ? 'border-primary bg-primary/5' : 'border-gray-200'
+                                            }`}
+                                            onClick={() => {
+                                                const currentValues = [...field.value];
+                                                const index = currentValues.indexOf(ativo.id);
+
+                                                if (index === -1) {
+                                                    currentValues.push(ativo.id);
+                                                } else {
+                                                    currentValues.splice(index, 1);
+                                                }
+
+                                                field.onChange(currentValues);
+                                            }}
+                                        >
+                                            <div className="flex items-start space-x-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={field.value.includes(ativo.id)}
+                                                    onChange={() => {}} // Controlado pelo onClick do card
+                                                    className="mt-1"
+                                                />
+                                                <div>
+                                                    <div className="font-medium">{ativo.nome}</div>
+                                                    <div className="text-sm text-gray-500">
+                                                        R$ {ativo.valorAtual.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     ))}
-                                </select>
+                                </div>
                             </FormControl>
-                            <FormDescription>Selecione um ou mais ativos financeiros.</FormDescription>
+                            <FormDescription>
+                                Selecione um ou mais ativos financeiros. Clique nos cartões para selecionar.
+                            </FormDescription>
                             <FormMessage />
                         </FormItem>
                     )}
