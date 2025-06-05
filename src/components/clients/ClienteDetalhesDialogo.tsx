@@ -14,7 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useQuery } from 'react-query';
-import { buscarAtivosFinanceiros } from '@/lib/api';
+import {buscarAtivosFinanceirosPorCliente} from "@/lib/api";
 import { AlertCircle, Check } from 'lucide-react';
 
 interface ClienteDetalhesDialogoProps {
@@ -25,21 +25,16 @@ interface ClienteDetalhesDialogoProps {
 
 export const ClienteDetalhesDialogo: React.FC<ClienteDetalhesDialogoProps> = ({ client, isOpen, onClose }) => {
     const {
-        data: ativos,
+        data: ativosDoCliente = [],
         isLoading,
         error
     } = useQuery<AtivoFinanceiro[], Error>(
-        'ativosFinanceiros',
-        buscarAtivosFinanceiros,
-        { enabled: isOpen }
+        ['ativosFinanceirosPorCliente', client?.id],
+        () => client ? buscarAtivosFinanceirosPorCliente(client.id) : Promise.resolve([]),
+        { enabled: isOpen && !!client }
     );
 
     if (!client) return null;
-
-    // Filtra apenas os ativos do cliente
-    const ativosDoCliente = Array.isArray(ativos) && Array.isArray(client.ativosFinanceiros)
-        ? ativos.filter(a => client.ativosFinanceiros.includes(a.id))
-        : [];
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
