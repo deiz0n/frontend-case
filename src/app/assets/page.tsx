@@ -7,7 +7,9 @@ import { AtivoFinanceiro } from '@/lib/types';
 
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, AlertTriangle } from 'lucide-react';
+import { Search, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function AssetsPage() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -31,6 +33,15 @@ export default function AssetsPage() {
 
     return (
         <div>
+            <div className="mb-4">
+                <Link href="/">
+                    <Button variant="outline" size="sm" className="mb-4 cursor-pointer">
+                        <ArrowLeft size={16} className="mr-2" />
+                        Voltar para a página inicial
+                    </Button>
+                </Link>
+            </div>
+
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900 mb-1">Ativos Financeiros</h1>
                 <p className="text-gray-600">Visualize todos os ativos financeiros disponíveis.</p>
