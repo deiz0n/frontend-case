@@ -1,4 +1,3 @@
-// app/clients/page.tsx
 "use client";
 
 import React, { useState } from 'react';
@@ -6,19 +5,19 @@ import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { buscarClientes, criarCliente, atualizarCliente } from '@/lib/api';
 import { Cliente, ClienteFormData } from '@/lib/types';
 
+import { toast } from "sonner";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 import { ClienteCard } from '@/components/clients/ClienteCard';
 import { ClienteForm } from '@/components/clients/ClientsForm';
 import { ClienteDetalhesDialogo } from '@/components/clients/ClienteDetalhesDialogo';
 
-import { Search, Plus, Edit, Eye, AlertTriangle } from 'lucide-react';
+import { Search, Plus, AlertTriangle } from 'lucide-react';
 
 export default function ClientsPage() {
     const queryClient = useQueryClient();
-    // const { toast } = useToast(); // Para notificações
 
     const [searchTerm, setSearchTerm] = useState('');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -26,38 +25,33 @@ export default function ClientsPage() {
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [selectedClient, setSelectedClient] = useState<Cliente | null>(null);
 
-    // Busca de clientes [cite: 16]
     const { data: clients, isLoading, error } = useQuery<Cliente[], Error>(
-        ['clients'], // Query key
-        buscarClientes   // Fetch function
+        ['clients'],
+        buscarClientes
     );
 
-    // Mutação para criar cliente [cite: 16]
     const createClientMutation = useMutation(criarCliente, {
         onSuccess: () => {
-            queryClient.invalidateQueries(['clients']); // Invalida a query de clientes para refetch
+            queryClient.invalidateQueries(['clients']);
             setIsAddModalOpen(false);
-            // toast({ title: "Sucesso!", description: "Cliente adicionado com sucesso." });
+            toast.success("Cliente adicionado com sucesso.");
         },
         onError: (err: Error) => {
-            // toast({ variant: "destructive", title: "Erro!", description: `Falha ao adicionar cliente: ${err.message}` });
-            console.error("Erro ao criar cliente:", err);
+            toast.error(`Falha ao adicionar cliente: ${err.message}`);
         },
     });
 
-    // Mutação para editar cliente [cite: 16]
     const updateClientMutation = useMutation(
         (data: { id: string; clientData: Partial<ClienteFormData> }) => atualizarCliente(data.id, data.clientData), {
             onSuccess: () => {
                 queryClient.invalidateQueries(['clients']);
-                queryClient.invalidateQueries(['clientAllocations', selectedClient?.id]); // Se estiver visualizando detalhes
+                queryClient.invalidateQueries(['clientAllocations', selectedClient?.id]);
                 setIsEditModalOpen(false);
                 setSelectedClient(null);
-                // toast({ title: "Sucesso!", description: "Cliente atualizado com sucesso." });
+                toast.success("Cliente atualizado com sucesso.");
             },
             onError: (err: Error) => {
-                // toast({ variant: "destructive", title: "Erro!", description: `Falha ao atualizar cliente: ${err.message}` });
-                console.error("Erro ao editar cliente:", err);
+                toast.error(`Falha ao atualizar cliente: ${err.message}`);
             },
         });
 
@@ -102,7 +96,6 @@ export default function ClientsPage() {
                 <p className="text-gray-600">Adicione, visualize e edite informações dos seus clientes.</p>
             </div>
 
-    {/* Barra de Ações */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -133,7 +126,6 @@ export default function ClientsPage() {
         </Dialog>
     </div>
 
-    {/* Grade de Clientes */}
     {filteredClients.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredClients.map((client) => (
@@ -153,7 +145,6 @@ export default function ClientsPage() {
             </div>
     )}
 
-    {/* Modal de Edição */}
     {selectedClient && (
         <Dialog open={isEditModalOpen} onOpenChange={(isOpen) => {
         setIsEditModalOpen(isOpen);
@@ -173,7 +164,6 @@ export default function ClientsPage() {
         </Dialog>
     )}
 
-    {/* Modal de Visualização de Detalhes */}
     <ClienteDetalhesDialogo
         client={selectedClient}
     isOpen={isViewModalOpen}
