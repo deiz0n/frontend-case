@@ -43,9 +43,6 @@ export const ClienteForm: React.FC<ClientFormProps> = ({ onSubmit, onCancel, def
 
     useEffect(() => {
         if (defaultValues && !loadingAtivos) {
-            console.log('Tipo de ativosFinanceiros:', typeof defaultValues.ativosFinanceiros);
-            console.log('ativosFinanceiros raw:', defaultValues.ativosFinanceiros);
-
             const ativosNormalizados = Array.isArray(defaultValues.ativosFinanceiros)
                 ? defaultValues.ativosFinanceiros.map((a: any) => {
                     if (typeof a === 'string') return a;
@@ -53,8 +50,6 @@ export const ClienteForm: React.FC<ClientFormProps> = ({ onSubmit, onCancel, def
                     return null;
                 }).filter(Boolean)
                 : [];
-
-            console.log('ativosFinanceiros normalizados:', ativosNormalizados);
 
             form.reset({
                 nome: defaultValues.nome || '',
@@ -126,25 +121,17 @@ export const ClienteForm: React.FC<ClientFormProps> = ({ onSubmit, onCancel, def
                         control={form.control}
                         name="ativosFinanceiros"
                         render={({ field }) => {
-                            // Garante que currentValues seja sempre um array e normalize os IDs
                             const currentValues = Array.isArray(field.value)
                                 ? field.value.map(id => String(id))
                                 : [];
 
-                            console.log('field.value:', field.value);
-                            console.log('currentValues processados:', currentValues);
-
                             return (
                                 <FormItem className="space-y-4">
-                                    {/* resto do código... */}
                                     <FormControl>
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                             {ativos.map(ativo => {
-                                                // Normalize o ID do ativo para string para comparação consistente
                                                 const ativoId = String(ativo.id);
                                                 const isSelected = currentValues.includes(ativoId);
-
-                                                console.log(`Ativo ${ativo.nome} (ID: ${ativoId}): ${isSelected ? 'selecionado' : 'não selecionado'}`);
 
                                                 return (
                                                     <div

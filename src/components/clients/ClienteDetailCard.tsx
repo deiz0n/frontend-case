@@ -17,13 +17,13 @@ import { useQuery } from 'react-query';
 import {buscarAtivosFinanceirosPorCliente} from "@/lib/api";
 import { AlertCircle, Check } from 'lucide-react';
 
-interface ClienteDetalhesDialogoProps {
+interface ClienteDetailCardProps {
     client: Cliente | null;
     isOpen: boolean;
     onClose: () => void;
 }
 
-export const ClienteDetalhesDialogo: React.FC<ClienteDetalhesDialogoProps> = ({ client, isOpen, onClose }) => {
+export const ClienteDetailCard: React.FC<ClienteDetailCardProps> = ({ client, isOpen, onClose }) => {
     const {
         data: ativosDoCliente = [],
         isLoading,

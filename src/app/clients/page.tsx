@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 
 import { ClienteCard } from '@/components/clients/ClienteCard';
 import { ClienteForm } from '@/components/clients/ClientsForm';
-import { ClienteDetalhesDialogo } from '@/components/clients/ClienteDetalhesDialogo';
+import { ClienteDetailCard } from '@/components/clients/ClienteDetailCard';
 
 import { Search, Plus, AlertTriangle, ArrowLeft } from 'lucide-react';
 
@@ -225,7 +225,7 @@ export default function ClientsPage() {
             </Dialog>
         )}
 
-            <ClienteDetalhesDialogo
+            <ClienteDetailCard
                 client={selectedClient && 'id' in selectedClient ? selectedClient as Cliente : null}
                 isOpen={isViewModalOpen}
                 onClose={() => { setIsViewModalOpen(false); setSelectedClient(null); }}
