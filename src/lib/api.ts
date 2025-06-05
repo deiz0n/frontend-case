@@ -19,7 +19,7 @@ export const criarCliente = async (data: ClienteFormData): Promise<Cliente> => {
 };
 
 export const atualizarCliente = async (id: string, data: Partial<ClienteFormData>): Promise<Cliente> => {
-    const response = await apiClient.put(`/clientes/atualizar/${id}`, data);
+    const response = await apiClient.patch(`/clientes/atualizar/${id}`, data);
     return response.data;
 };
 
