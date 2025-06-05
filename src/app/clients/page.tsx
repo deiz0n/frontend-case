@@ -54,6 +54,13 @@ export default function ClientsPage() {
         (data: { id: string; clientData: Partial<ClienteFormData> }) =>
             atualizarCliente(data.id, data.clientData),
         {
+            onSuccess: () => {
+                queryClient.invalidateQueries(['clients']);
+                queryClient.invalidateQueries(['ativosFinanceirosPorCliente']);
+                setIsEditModalOpen(false);
+                setSelectedClient(null);
+                toast.success("Cliente atualizado com sucesso.");
+            },
             onError: (err: any) => {
                 const axiosError = err as AxiosError<any>;
                 const mensagemErro = axiosError.response?.data?.mensagem ||
@@ -62,7 +69,6 @@ export default function ClientsPage() {
                     "Erro desconhecido";
 
                 toast.error(`Falha ao atualizar cliente: ${mensagemErro}`);
-                console.error("Detalhes completos do erro:", axiosError.response?.data);
             },
         }
     );
@@ -73,7 +79,21 @@ export default function ClientsPage() {
 
     const handleEditClientSubmit = (data: ClienteFormData) => {
         if (selectedClient && 'id' in selectedClient) {
-            updateClientMutation.mutate({ id: selectedClient.id, clientData: data });
+            const ativosIds = Array.isArray(data.ativosFinanceiros)
+                ? data.ativosFinanceiros.map(String)
+                : [];
+
+            const formattedData = {
+                nome: data.nome,
+                email: data.email,
+                status: data.status,
+                ativos: ativosIds
+            };
+
+            updateClientMutation.mutate({
+                id: selectedClient.id,
+                clientData: formattedData
+            });
         }
     };
 
@@ -89,7 +109,6 @@ export default function ClientsPage() {
             setSelectedClient(defaultValues);
             setIsEditModalOpen(true);
         } catch (error) {
-            console.error("Erro ao buscar ativos do cliente:", error);
             toast.error("Erro ao carregar ativos do cliente");
         }
     };
