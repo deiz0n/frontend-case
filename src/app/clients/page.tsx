@@ -74,7 +74,16 @@ export default function ClientsPage() {
     );
 
     const handleAddClientSubmit = (data: ClienteFormData) => {
-        createClientMutation.mutate(data);
+        const formattedData = {
+            nome: data.nome,
+            email: data.email,
+            status: data.status,
+            ativos: Array.isArray(data.ativosFinanceiros)
+                ? data.ativosFinanceiros.map(String)
+                : []
+        };
+
+        createClientMutation.mutate(formattedData);
     };
 
     const handleEditClientSubmit = (data: ClienteFormData) => {
