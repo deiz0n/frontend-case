@@ -62,7 +62,7 @@ export default function AssetsPage() {
             {filteredAssets.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {filteredAssets.map((asset) => (
-                        <Card key={asset.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                        <Card key={asset.id} className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
                             <CardHeader className="bg-gradient-to-r from-emerald-100 to-teal-50 px-4 py-3 border-b">
                                 <div className="space-y-1">
                                     <p className="text-xs font-medium text-emerald-600">Nome do ativo</p>
