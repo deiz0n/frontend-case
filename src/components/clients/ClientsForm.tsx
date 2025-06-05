@@ -21,9 +21,13 @@ interface ClientFormProps {
 
 export const ClienteForm: React.FC<ClientFormProps> = ({ onSubmit, onCancel, defaultValues, isSubmitting }) => {
     const [ativos, setAtivos] = useState<AtivoFinanceiro[]>([]);
+    const [loadingAtivos, setLoadingAtivos] = useState(true);
 
     useEffect(() => {
-        buscarAtivosFinanceiros().then(res => setAtivos(Array.isArray(res) ? res : []));
+        buscarAtivosFinanceiros().then((res) => {
+            setAtivos(res);
+            setLoadingAtivos(false);
+        });
     }, []);
 
     const form = useForm<ClienteFormData>({
@@ -37,15 +41,32 @@ export const ClienteForm: React.FC<ClientFormProps> = ({ onSubmit, onCancel, def
         },
     });
 
-    const handleSubmit = form.handleSubmit((data) => {
-        const dadosParaEnviar = {
-            nome: data.nome,
-            email: data.email,
-            status: data.status,
-            ativos: data.ativosFinanceiros
-        };
+    useEffect(() => {
+        if (defaultValues && !loadingAtivos) {
+            console.log('Tipo de ativosFinanceiros:', typeof defaultValues.ativosFinanceiros);
+            console.log('ativosFinanceiros raw:', defaultValues.ativosFinanceiros);
 
-        onSubmit(dadosParaEnviar);
+            const ativosNormalizados = Array.isArray(defaultValues.ativosFinanceiros)
+                ? defaultValues.ativosFinanceiros.map((a: any) => {
+                    if (typeof a === 'string') return a;
+                    if (typeof a === 'object' && a !== null && a.id) return String(a.id);
+                    return null;
+                }).filter(Boolean)
+                : [];
+
+            console.log('ativosFinanceiros normalizados:', ativosNormalizados);
+
+            form.reset({
+                nome: defaultValues.nome || '',
+                email: defaultValues.email || '',
+                status: defaultValues?.status?.toUpperCase() === 'INATIVO' ? 'INATIVO' : 'ATIVO',
+                ativosFinanceiros: ativosNormalizados
+            });
+        }
+    }, [defaultValues, form, loadingAtivos]);
+
+    const handleSubmit = form.handleSubmit((data) => {
+        onSubmit(data);
     });
 
     return (
@@ -98,58 +119,78 @@ export const ClienteForm: React.FC<ClientFormProps> = ({ onSubmit, onCancel, def
                         </FormItem>
                     )}
                 />
-                <FormField<ClienteFormData>
-                    control={form.control}
-                    name="ativosFinanceiros"
-                    render={({ field }) => (
-                        <FormItem className="space-y-4">
-                            <FormLabel>Ativos Financeiros</FormLabel>
-                            <FormControl>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                    {Array.isArray(ativos) && ativos.map(ativo => (
-                                        <div
-                                            key={ativo.id}
-                                            className={`border rounded-md p-3 cursor-pointer hover:bg-slate-50 transition-colors ${
-                                                field.value.includes(ativo.id) ? 'border-primary bg-primary/5' : 'border-gray-200'
-                                            }`}
-                                            onClick={() => {
-                                                const currentValues = [...field.value];
-                                                const index = currentValues.indexOf(ativo.id);
+                {loadingAtivos ? (
+                    <div>Carregando ativos financeiros...</div>
+                ) : (
+                    <FormField<ClienteFormData>
+                        control={form.control}
+                        name="ativosFinanceiros"
+                        render={({ field }) => {
+                            // Garante que currentValues seja sempre um array e normalize os IDs
+                            const currentValues = Array.isArray(field.value)
+                                ? field.value.map(id => String(id))
+                                : [];
 
-                                                if (index === -1) {
-                                                    currentValues.push(ativo.id);
-                                                } else {
-                                                    currentValues.splice(index, 1);
-                                                }
+                            console.log('field.value:', field.value);
+                            console.log('currentValues processados:', currentValues);
 
-                                                field.onChange(currentValues);
-                                            }}
-                                        >
-                                            <div className="flex items-start space-x-2">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={field.value.includes(ativo.id)}
-                                                    onChange={() => {}} // Controlado pelo onClick do card
-                                                    className="mt-1"
-                                                />
-                                                <div>
-                                                    <div className="font-medium">{ativo.nome}</div>
-                                                    <div className="text-sm text-gray-500">
-                                                        R$ {ativo.valorAtual.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            return (
+                                <FormItem className="space-y-4">
+                                    {/* resto do código... */}
+                                    <FormControl>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                            {ativos.map(ativo => {
+                                                // Normalize o ID do ativo para string para comparação consistente
+                                                const ativoId = String(ativo.id);
+                                                const isSelected = currentValues.includes(ativoId);
+
+                                                console.log(`Ativo ${ativo.nome} (ID: ${ativoId}): ${isSelected ? 'selecionado' : 'não selecionado'}`);
+
+                                                return (
+                                                    <div
+                                                        key={ativo.id}
+                                                        className={`border rounded-md p-3 cursor-pointer hover:bg-slate-50 transition-colors ${
+                                                            isSelected ? 'border-primary bg-primary/5' : 'border-gray-200'
+                                                        }`}
+                                                        onClick={() => {
+                                                            const index = currentValues.indexOf(ativoId);
+                                                            const newValues = [...currentValues];
+                                                            if (index === -1) {
+                                                                newValues.push(ativoId);
+                                                            } else {
+                                                                newValues.splice(index, 1);
+                                                            }
+                                                            field.onChange(newValues);
+                                                        }}
+                                                    >
+                                                        <div className="flex items-start space-x-2">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={isSelected}
+                                                                onChange={() => {}}
+                                                                className="mt-1"
+                                                            />
+                                                            <div>
+                                                                <div className="font-medium">{ativo.nome}</div>
+                                                                <div className="text-sm text-gray-500">
+                                                                    R$ {ativo.valorAtual.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </div>
+                                                );
+                                            })}
                                         </div>
-                                    ))}
-                                </div>
-                            </FormControl>
-                            <FormDescription>
-                                Selecione um ou mais ativos financeiros. Clique nos cartões para selecionar.
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                                    </FormControl>
+                                    <FormDescription>
+                                        Selecione um ou mais ativos financeiros. Clique nos cartões para selecionar.
+                                    </FormDescription>
+                                    <FormMessage/>
+                                </FormItem>
+                            );
+                        }}
+                    />
+                )}
                 <div className="flex gap-3 pt-4">
                     <Button type="submit" className="flex-1" disabled={isSubmitting}>
                         {isSubmitting ? (defaultValues?.nome ? 'Atualizando...' : 'Adicionando...') : (defaultValues?.nome ? 'Atualizar Cliente' : 'Adicionar Cliente')}
