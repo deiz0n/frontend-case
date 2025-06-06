@@ -174,15 +174,17 @@ export default function ClientsPage() {
                     Adicionar Cliente
                 </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-full w-[95vw] sm:max-w-lg p-2 sm:p-6 max-h-[90vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle>Adicionar Novo Cliente</DialogTitle>
                 </DialogHeader>
-                <ClienteForm
-                    onSubmit={handleAddClientSubmit}
-                    onCancel={() => setIsAddModalOpen(false)}
-                    isSubmitting={createClientMutation.isLoading}
-                />
+                <div className="overflow-y-auto flex-1">
+                    <ClienteForm
+                        onSubmit={handleAddClientSubmit}
+                        onCancel={() => setIsAddModalOpen(false)}
+                        isSubmitting={createClientMutation.isLoading}
+                    />
+                </div>
             </DialogContent>
         </Dialog>
     </div>
@@ -211,16 +213,18 @@ export default function ClientsPage() {
         setIsEditModalOpen(isOpen);
         if (!isOpen) setSelectedClient(null);
     }}>
-        <DialogContent>
-            <DialogHeader>
-                <DialogTitle>Editar Cliente: {selectedClient.nome}</DialogTitle>
-    </DialogHeader>
-        <ClienteForm
-            onSubmit={handleEditClientSubmit}
-            onCancel={() => { setIsEditModalOpen(false); setSelectedClient(null); }}
-            defaultValues={selectedClient}
-            isSubmitting={updateClientMutation.isLoading}
-            />
+            <DialogContent className="max-w-full w-[95vw] sm:max-w-lg p-2 sm:p-6 max-h-[90vh] flex flex-col">
+                <DialogHeader>
+                    <DialogTitle>Editar Cliente: {selectedClient.nome}</DialogTitle>
+                </DialogHeader>
+                <div className="overflow-y-auto flex-1">
+                    <ClienteForm
+                        onSubmit={handleEditClientSubmit}
+                        onCancel={() => { setIsEditModalOpen(false); setSelectedClient(null); }}
+                        defaultValues={selectedClient}
+                        isSubmitting={updateClientMutation.isLoading}
+                    />
+                </div>
             </DialogContent>
             </Dialog>
         )}
